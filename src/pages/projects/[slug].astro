@@ -1,7 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
 import ProjectLayout from '../../layouts/ProjectLayout.astro';
+import Callout from '../../components/Callout.astro';
 import { published } from '../../utils';
+
+const mdxComponents = { Callout };
 
 export async function getStaticPaths() {
   const projects = published(await getCollection('projects'));
@@ -16,5 +19,5 @@ const { Content } = await render(project);
 ---
 
 <ProjectLayout project={project}>
-  <Content />
+  <Content components={mdxComponents} />
 </ProjectLayout>

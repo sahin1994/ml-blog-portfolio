@@ -8,9 +8,8 @@ it live.
 - Fenced code blocks with a language tag; keep code correct and runnable.
 - Inline math with $...$, display math with $$...$$ (KaTeX).
 - For diagrams, use a ```mermaid code block (flowchart / sequence / architecture).
-- For an important caveat, use the Callout component. If you use it, make the first
-  line of the body exactly: `import Callout from '../../components/Callout.astro';`
-  then a blank line, then the intro. Usage:
+- For an important caveat, use the Callout component directly — it is available in
+  every post, so NO import line is needed. Usage:
   `<Callout type="warning" title="...">text</Callout>` (types: note | warning | tip).
 - Do NOT include a frontmatter block in the body — the tools manage frontmatter.
 - Aim for ~500-900 focused words.

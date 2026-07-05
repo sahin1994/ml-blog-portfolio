@@ -141,10 +141,6 @@ function cleanBody(text) {
   if (fence) body = fence[1].trim();
   // Strip frontmatter if the model added one anyway.
   body = body.replace(/^---\n[\s\S]*?\n---\n+/, '');
-  // Ensure the Callout import exists if the component is used.
-  if (body.includes('<Callout') && !body.includes("import Callout")) {
-    body = `import Callout from '../../components/Callout.astro';\n\n${body}`;
-  }
   return body;
 }
 

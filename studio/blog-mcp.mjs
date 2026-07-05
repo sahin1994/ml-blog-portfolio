@@ -30,9 +30,8 @@ const HOUSE_STYLE = `House style for this blog:
 - Use "## " headings for sections (they become the table of contents).
 - Fenced code blocks with a language tag; keep code correct and runnable.
 - Inline math with $...$, display math with $$...$$ (KaTeX).
-- For an important caveat, use the Callout component. If you use it, make the
-  first line of the body exactly:  import Callout from '../../components/Callout.astro';
-  then a blank line, then the intro. Usage: <Callout type="warning" title="...">text</Callout>
+- For an important caveat, use the Callout component directly — it is available in
+  every post, so NO import line is needed: <Callout type="warning" title="...">text</Callout>
   (types: note | warning | tip). Do NOT include frontmatter in the body — the
   tools manage frontmatter for you.
 - Aim for ~500-900 focused words.`;
