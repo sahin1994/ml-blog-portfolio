@@ -11,6 +11,7 @@ import {
   COLORS,
 } from '../lib/content.mjs';
 import { readConfig, writeConfig, readStyleGuide, writeStyleGuide } from '../lib/config.mjs';
+import { publishFile } from '../lib/git.mjs';
 
 const app = express();
 app.use(cors());
@@ -47,6 +48,19 @@ app.post('/api/post', wrap((req) => createPost(req.body)));
 app.put('/api/post/:slug', wrap((req) => savePost(req.params.slug, req.body)));
 app.post('/api/post/:slug/draft', wrap((req) => setDraft(req.params.slug, !!req.body.draft)));
 app.delete('/api/post/:slug', wrap((req) => deletePost(req.params.slug)));
+
+// Commit + push the post so Cloudflare redeploys the live site.
+app.post(
+  '/api/post/:slug/deploy',
+  wrap(async (req) => {
+    const post = await readPost(req.params.slug);
+    if (!post) throw new Error('not found');
+    const message = req.body.message || `Publish ${post.data.title || req.params.slug}`;
+    const res = await publishFile(post.path, message);
+    if (!res.ok) throw new Error(`git ${res.step} failed: ${res.detail}`);
+    return { deployed: true, committed: res.committed };
+  }),
+);
 
 // AI chat — Server-Sent Events stream. Delegates to the Agent SDK wrapper.
 app.post('/api/chat', async (req, res) => {

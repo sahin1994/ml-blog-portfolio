@@ -93,13 +93,41 @@ export default function App() {
     } catch (e) { flash(e.message); }
   };
 
-  const togglePublish = async () => {
-    const next = !data.draft;
-    await api.save(slug, { data: { ...data, body: undefined }, body });
-    const post = await api.setDraft(slug, next);
-    setData(post.data);
-    await refreshPosts();
-    flash(next ? 'Set to draft' : 'Published');
+  const publishLive = async () => {
+    if (!slug) return;
+    setSaving(true);
+    try {
+      await api.save(slug, { data, body });
+      const post = await api.setDraft(slug, false);
+      setData(post.data);
+      setDirty(false);
+      flash('Publishing…');
+      await api.deploy(slug, `Publish ${post.data.title || slug}`);
+      await refreshPosts();
+      setPreviewKey((k) => k + 1);
+      flash('Published — live in ~2 min');
+    } catch (e) {
+      flash(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const unpublish = async () => {
+    if (!slug) return;
+    setSaving(true);
+    try {
+      const post = await api.setDraft(slug, true);
+      setData(post.data);
+      flash('Unpublishing…');
+      await api.deploy(slug, `Unpublish ${post.data.title || slug}`);
+      await refreshPosts();
+      flash('Unpublished — updating live');
+    } catch (e) {
+      flash(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   // ---- AI ----
@@ -209,7 +237,12 @@ export default function App() {
           {data && <span className={`pill ${data.draft ? 'draft' : 'live'}`}>{data.draft ? 'draft' : 'published'}</span>}
           <button className="btn" onClick={() => setSettingsOpen(true)} title="Settings"><i className="ti ti-settings" /></button>
           <button className="btn" onClick={() => setPreviewKey((k) => k + 1)} disabled={!slug}>Refresh</button>
-          <button className="btn primary" onClick={togglePublish} disabled={!slug}>{data?.draft ? 'Publish' : 'Unpublish'}</button>
+          {data && !data.draft && (
+            <button className="btn" onClick={unpublish} disabled={!slug || saving}>Unpublish</button>
+          )}
+          <button className="btn primary" onClick={publishLive} disabled={!slug || saving}>
+            {data?.draft ? 'Publish' : 'Update live'}
+          </button>
         </div>
       </div>
 

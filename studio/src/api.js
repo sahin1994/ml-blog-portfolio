@@ -14,6 +14,8 @@ export const api = {
     fetch(`/api/post/${slug}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(j),
   setDraft: (slug, draft) =>
     fetch(`/api/post/${slug}/draft`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ draft }) }).then(j),
+  deploy: (slug, message) =>
+    fetch(`/api/post/${slug}/deploy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) }).then(j),
   config: () => fetch('/api/config').then(j),
   saveConfig: (payload) =>
     fetch('/api/config', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(j),
