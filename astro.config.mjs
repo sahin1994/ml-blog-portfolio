@@ -6,9 +6,9 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkMermaid from './src/lib/remark-mermaid.mjs';
 
-// Update this to your real domain before deploying.
+// Cloudflare Pages default subdomain. Change to your custom domain when you add one.
 export default defineConfig({
-  site: 'https://example.com',
+  site: 'https://ml-blog-portfolio.pages.dev',
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],

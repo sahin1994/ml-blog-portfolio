@@ -13,7 +13,7 @@ export const NAV = [
 ];
 
 export const SOCIALS = [
-  { label: 'GitHub', href: 'https://github.com/', icon: 'ti-brand-github' },
+  { label: 'GitHub', href: 'https://github.com/sahin1994', icon: 'ti-brand-github' },
   { label: 'X', href: 'https://x.com/', icon: 'ti-brand-x' },
   { label: 'LinkedIn', href: 'https://linkedin.com/', icon: 'ti-brand-linkedin' },
   { label: 'RSS', href: '/rss.xml', icon: 'ti-rss' },

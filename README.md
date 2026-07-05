@@ -94,11 +94,32 @@ src/
 └─ content.config.ts   collection schemas
 ```
 
-## Before deploying
+## Deploying to Cloudflare Pages
 
-- Set your real domain in `astro.config.mjs` (`site`).
-- Update name, email, and social links in `src/consts.ts`.
-- Replace the GitHub links in `Nav.astro` and the socials.
+The site is a static build, deployed via GitHub → Cloudflare Pages (every push
+redeploys). One-time setup:
 
-Deploy anywhere that serves static files — Vercel, Netlify, and Cloudflare Pages
-all auto-detect Astro.
+1. Go to **Cloudflare dashboard → Workers & Pages → Create → Pages → Connect to Git**.
+2. Select the `ml-blog-portfolio` repo.
+3. Build settings:
+   - **Framework preset:** Astro
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+   - **Node version:** pinned to 22 via `.nvmrc` (no action needed)
+4. **Save and Deploy.** You get `https://ml-blog-portfolio.pages.dev`.
+
+After that, `git push` auto-deploys. Build config lives in the repo:
+`.nvmrc` (Node 22), `engines` in `package.json`, `robots.txt` + `og.svg` in
+`public/`, and `site` in `astro.config.mjs`.
+
+### Custom domain
+Add it under the Pages project → **Custom domains**, then set `site` in
+`astro.config.mjs` to the domain and push (so sitemap/RSS/canonical URLs match).
+
+### Notes
+- The build runs Pagefind (`astro build && pagefind --site dist`); `pagefind` is
+  a devDependency, installed automatically by the host.
+- The `studio/` folder is a **local tool** — it is never built or served by the
+  site (Astro only builds `src/pages/`). Do not deploy it.
+- Placeholder content to update with your own: social handles (X, LinkedIn) in
+  `src/consts.ts`, and the `repo`/`demo` URLs in `src/content/projects/`.

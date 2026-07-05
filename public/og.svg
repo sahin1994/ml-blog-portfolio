@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#faf9f6"/>
+  <rect x="0" y="0" width="1200" height="10" fill="#2f7ed0"/>
+  <g transform="translate(90, 150)">
+    <rect x="0" y="0" width="56" height="56" rx="14" fill="#2f7ed0"/>
+    <text x="28" y="41" font-family="Georgia, serif" font-size="34" font-weight="500" fill="#ffffff" text-anchor="middle">s</text>
+    <text x="80" y="42" font-family="Georgia, serif" font-size="34" font-weight="500" fill="#1a1a19">Sahin Ahmed</text>
+  </g>
+  <text x="90" y="330" font-family="Georgia, serif" font-size="62" font-weight="500" fill="#1a1a19">The systems behind</text>
+  <text x="90" y="405" font-family="Georgia, serif" font-size="62" font-weight="500" fill="#1a1a19">machine learning.</text>
+  <text x="90" y="480" font-family="Inter, system-ui, sans-serif" font-size="26" fill="#5f5e5a">Tutorials, deep-dives, and projects on ML, data science, and engineering.</text>
+  <g transform="translate(90, 520)" font-family="Inter, system-ui, sans-serif" font-size="20">
+    <rect x="0" y="0" width="150" height="34" rx="17" fill="#e6f1fb"/>
+    <text x="75" y="23" fill="#185fa5" text-anchor="middle">machine learning</text>
+    <rect x="166" y="0" width="120" height="34" rx="17" fill="#eeedfe"/>
+    <text x="226" y="23" fill="#534ab7" text-anchor="middle">data science</text>
+    <rect x="312" y="0" width="128" height="34" rx="17" fill="#eaf3de"/>
+    <text x="376" y="23" fill="#3b6d11" text-anchor="middle">engineering</text>
+  </g>
+</svg>
