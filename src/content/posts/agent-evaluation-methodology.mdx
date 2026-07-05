@@ -1,0 +1,59 @@
+---
+title: Agent evaluation Methodology
+description: A deep dive into AI Agent evaluation methods
+pubDate: '2026-07-05'
+category: deep-dive
+tags:
+  - agentic
+draft: false
+featured: false
+---
+Evaluating an agent is a different problem from evaluating a single-turn LLM call. A prompt-response eval can score an answer against a reference string; an agent takes a sequence of actions, calls tools, and ends up in some final state that a reference string can't capture. Before you can measure whether an agent is any good, you have to decide what "good" means for a multi-step process — and most teams get that wrong before they ever build a test set.
+
+## Defining success before you measure it
+
+Start from the outcome the agent is supposed to produce, not the words it's supposed to say. For a support agent, success might be "the customer's issue is resolved and the right side effects happened" — a refund issued, a ticket closed, a record updated — regardless of how the agent phrases its reply. Write that down as an explicit, checkable definition before writing a single test case. If you can't state what state the world should be in after a successful run, you don't have a success criterion yet, you have a vibe.
+
+This definition does double duty: it tells you what to assert in a test set, and it tells you what to log in production so you can check whether real runs met the bar.
+
+## Building a golden test set
+
+Once you've defined what "success" means for a task, the next problem is scale: you need enough representative cases to catch regressions before they reach production. A golden test set does that job, but only if it's built around agent behavior rather than repurposed from single-turn LLM evals.
+
+Three things make agent test sets different from prompt-response test sets:
+
+- **Sample from real usage, not just hand-written edge cases.** Synthetic tasks tend to cluster around whatever failure mode you were thinking about when you wrote them. Pull a sample of real traces (logged tool calls, user turns, outcomes) and anonymize it as your base set, then add hand-written cases for known trouble spots.
+- **Grade final state, not exact text.** An agent that calls the right tool with the right arguments and reaches the right end state has succeeded, even if its explanation to the user is worded differently each run. Assertions should check state, not strings:
+
+```json
+{
+  "task_id": "refund_duplicate_charge",
+  "input": "Customer says they were charged twice for order #4471.",
+  "assertions": [
+    {"type": "tool_called", "name": "issue_refund", "args": {"order_id": "4471"}},
+    {"type": "final_state", "check": "refund_status == 'issued'"}
+  ]
+}
+```
+
+- **Allow more than one valid trajectory.** Two agents can take different but equally correct paths to the same outcome — one might check order history first, another might not need to. Grading against a single fixed trajectory will fail correct runs; grading against the assertions above will not.
+
+For the parts that can't be reduced to a state check — was the explanation clear, was the tone appropriate — an LLM judge with a short rubric works better than trying to force everything into hard assertions. Calibrate the judge before trusting it: run it against a few dozen human-labeled examples and check agreement before using it to gate anything.
+
+Exact-match grading is the most common mistake here. It looks rigorous, but it silently penalizes valid trajectories and gives you a false signal that the agent regressed when nothing did.
+
+## Running the eval set as a regression gate
+
+A golden set only pays off if it runs automatically, on every change that could plausibly affect behavior — a prompt edit, a tool schema change, a model swap. Wire it into CI the same way you would a test suite: run it, compute a pass rate per task category (not just an aggregate), and block the merge if a category that was passing starts failing. Aggregate pass rate hides regressions — a set that's 95% passing overall can still mean a whole task type broke completely if that category is a small slice of the set.
+
+Track pass rate over time, not just pass/fail on the latest run. A slow drift downward across several merges is a different problem than a sudden cliff, and it's invisible if you only ever look at the current CI status.
+
+<Callout type="warning" title="A green suite is not a safety net">
+A passing eval set tells you the agent didn't regress on the cases you thought to write down. It says nothing about the cases you didn't. Treat it as a floor, not a guarantee — production monitoring is what catches the failure modes the golden set never anticipated.
+</Callout>
+
+## Watching what happens after deploy
+
+Evals catch known failure modes; production catches the ones you haven't imagined yet. Sample live traces the same way you sampled them to build the golden set, and score them against the same success definition. When you find a real failure that the eval set didn't catch, add it back as a new test case — the golden set should grow from production, not just from imagination, or it stops tracking the ways the agent actually breaks.
+
+Recalibrate periodically, not just once. If you swap the underlying model, change a tool's behavior, or update the LLM judge's rubric, the judge's agreement with human raters can silently drift even though nothing about your evaluation code changed. Treat judge calibration as something to recheck on a schedule, not a one-time setup step.
