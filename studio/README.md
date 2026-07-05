@@ -30,7 +30,12 @@ Then open **http://localhost:5173**. It starts three processes:
 - **Live preview** — an iframe of the real Astro page for the current draft, refreshed on save (drafts are visible in dev only).
 - **Frontmatter form** — title, category, description, tags, featured — no hand-edited YAML.
 - **AI panel** — chat with Claude about the post plus quick actions (Draft, Tighten, Diagram, Title, Callout). Claude edits the file directly through the MCP tools; the editor reloads.
-- **Publish** — flip draft/published from the top bar.
+- **Publish** — the top-bar button sets `draft: false`, commits just that post,
+  and pushes to GitHub, so Cloudflare redeploys and it goes **live in ~2 min**.
+  "Update live" re-pushes edits to a published post; "Unpublish" removes it from
+  the live site. Only the one post file is committed — other drafts and WIP stay
+  local. (Needs `git push` to work from your machine — it does, since you pushed
+  the repo already.)
 
 **How the AI connects:** the API shells the `claude` CLI in streaming mode with the
 blog MCP server auto-loaded from `.mcp.json`. It uses your Claude login — no API
