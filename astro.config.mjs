@@ -6,13 +6,17 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkMermaid from './src/lib/remark-mermaid.mjs';
 
+import cloudflare from "@astrojs/cloudflare";
+
 // Live deployment URL. Change to your custom domain when you add one.
 export default defineConfig({
   site: 'https://cloudflare-workers-autoconfig-ml-blog-portfolio.sahin-samia.workers.dev',
   integrations: [mdx(), sitemap()],
+
   vite: {
     plugins: [tailwindcss()],
   },
+
   markdown: {
     remarkPlugins: [remarkMermaid, remarkMath],
     rehypePlugins: [rehypeKatex],
@@ -24,4 +28,6 @@ export default defineConfig({
       wrap: false,
     },
   },
+
+  adapter: cloudflare()
 });

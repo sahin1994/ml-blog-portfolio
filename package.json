@@ -10,17 +10,21 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build && pagefind --site dist",
-    "preview": "astro preview",
+    "preview": "npm run build && wrangler dev",
     "write": "node scripts/write.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "gray-matter": "^4.0.3",
     "pagefind": "^1.3.0",
+    "wrangler": "^4.107.0",
     "zod": "^4.4.3"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "12",
     "@astrojs/mdx": "^4.2.0",
     "@astrojs/rss": "^4.0.11",
     "@astrojs/sitemap": "^3.3.0",
