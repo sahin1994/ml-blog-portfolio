@@ -21,11 +21,14 @@ export async function publishFile(path, message) {
   const add = await run('git', ['add', path]);
   if (add.code !== 0) return { ok: false, step: 'add', detail: add.err || add.out };
 
-  const commit = await run('git', ['commit', '-m', message, '--', path]);
-  // "nothing to commit" just means the file is already committed — not an error.
-  const nothingToCommit = /nothing to commit|no changes added/i.test(commit.out + commit.err);
-  if (commit.code !== 0 && !nothingToCommit) {
-    return { ok: false, step: 'commit', detail: commit.err || commit.out };
+  // Deterministically check whether this path has staged changes, instead of
+  // parsing git's prose. --quiet exits 1 when there is a diff, 0 when there isn't.
+  const staged = await run('git', ['diff', '--cached', '--quiet', '--', path]);
+  let committed = false;
+  if (staged.code === 1) {
+    const commit = await run('git', ['commit', '-m', message, '--', path]);
+    if (commit.code !== 0) return { ok: false, step: 'commit', detail: commit.err || commit.out };
+    committed = true;
   }
 
   const push = await run('git', ['push', 'origin', 'HEAD']);
@@ -36,5 +39,5 @@ export async function publishFile(path, message) {
     }
     return { ok: false, step: 'push', detail };
   }
-  return { ok: true, committed: !nothingToCommit };
+  return { ok: true, committed };
 }
