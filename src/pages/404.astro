@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Not found">
+  <div class="mx-auto flex max-w-2xl flex-col items-center px-6 py-24 text-center">
+    <p class="font-serif text-5xl font-medium text-text-muted">404</p>
+    <h1 class="mt-4 font-serif text-2xl font-medium">This page wandered off.</h1>
+    <p class="mt-2 text-text-secondary">The link may be broken, or the page may have moved.</p>
+    <a
+      href="/"
+      class="mt-6 inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm hover:bg-surface-1"
+    >
+      <i class="ti ti-arrow-left" aria-hidden="true"></i> Back home
+    </a>
+  </div>
+</BaseLayout>

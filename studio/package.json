@@ -1,0 +1,32 @@
+{
+  "name": "blog-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "server": "node server/index.mjs",
+    "web": "vite",
+    "astro": "cd .. && npm run dev",
+    "dev": "concurrently -k -n astro,api,web -c blue,magenta,green \"npm:astro\" \"npm:server\" \"npm:web\"",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/language-data": "^6.5.1",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.4",
+    "@uiw/react-codemirror": "^4.23.10",
+    "cors": "^2.8.5",
+    "diff": "^7.0.0",
+    "express": "^4.21.2",
+    "gray-matter": "^4.0.3",
+    "mermaid": "^11.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "vite": "^6.0.11"
+  }
+}

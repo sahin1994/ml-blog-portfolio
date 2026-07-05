@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, SOCIALS } from '../consts';
+---
+
+<BaseLayout title="About">
+  <div class="mx-auto max-w-2xl px-6">
+    <section class="pt-12">
+      <div class="flex items-center gap-4">
+        <span
+          class="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-xl font-medium text-white"
+          >SA</span
+        >
+        <div>
+          <h1 class="font-serif text-[1.875rem] font-medium">{SITE.name}</h1>
+          <p class="text-text-secondary">Data scientist & machine learning engineer</p>
+        </div>
+      </div>
+
+      <div class="prose mt-8">
+        <p>
+          Hi — I'm Sahin. I build machine learning systems and write about how they work
+          underneath the abstractions. This site is where I keep my tutorials, deep-dives, and
+          the projects I'm proud of.
+        </p>
+        <p>
+          I care about the parts that don't fit in a tweet: the numerics that make a model
+          stable, the validation traps that make offline scores lie, and the engineering that
+          takes a notebook to production. My writing tries to show the working, not just the
+          result.
+        </p>
+
+        <h2>What I work on</h2>
+        <ul>
+          <li>Deep learning and NLP — transformers, embeddings, retrieval</li>
+          <li>Classical ML on tabular data — the unglamorous 80% of real work</li>
+          <li>MLOps — shipping, monitoring, and rolling back models safely</li>
+        </ul>
+      </div>
+
+      <div id="contact" class="mt-10 rounded-xl border border-border bg-surface-1 p-5">
+        <h2 class="font-serif text-xl font-medium">Get in touch</h2>
+        <p class="mt-1 text-sm text-text-secondary">
+          Questions, collaborations, or just to say hello — email is best.
+        </p>
+        <div class="mt-4 flex flex-wrap items-center gap-2.5">
+          <a
+            href={`mailto:${SITE.email}`}
+            class="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-sm text-white hover:opacity-90"
+          >
+            <i class="ti ti-mail" aria-hidden="true"></i> {SITE.email}
+          </a>
+          {
+            SOCIALS.filter((s) => s.label !== 'RSS').map((s) => (
+              <a
+                href={s.href}
+                class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3.5 py-2 text-sm hover:bg-surface"
+              >
+                <i class={`ti ${s.icon}`} aria-hidden="true" /> {s.label}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

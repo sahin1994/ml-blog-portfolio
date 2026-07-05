@@ -1,0 +1,107 @@
+---
+title: "KV caching in transformers"
+description: "Why autoregressive generation recomputes the same keys and values on every step — and how caching them turns quadratic work into linear."
+pubDate: 2026-07-04
+category: deep-dive
+tags: [nlp, transformers, inference]
+draft: false
+featured: false
+---
+
+import Callout from '../../components/Callout.astro';
+
+A transformer decoder generates one token at a time, and each new token attends
+to every token before it. The naive way to do this recomputes the attention over
+the *entire* prefix on every step — so generating a sequence of length $n$ costs
+$O(n^2)$ passes through the attention layer. KV caching removes that redundancy
+by remembering the keys and values it already computed. The result is the single
+most important optimization behind fast LLM inference.
+
+## The redundancy
+
+Recall scaled dot-product attention for a query at position $t$:
+
+$$
+\text{Attention}(q_t, K, V) = \text{softmax}\!\left(\frac{q_t K^{\top}}{\sqrt{d_k}}\right) V
+$$
+
+Here $K$ and $V$ stack the key and value vectors of *all* positions $1 \dots t$.
+The key insight: token $i$'s key $k_i$ and value $v_i$ depend only on token $i$.
+They do not change when a later token arrives. Yet a naive generation loop feeds
+the whole growing sequence back through the model each step, recomputing
+$k_1 \dots k_{t-1}$ and $v_1 \dots v_{t-1}$ from scratch every single time.
+
+That is pure waste. On step $t$ we only need one new query $q_t$, one new key
+$k_t$, and one new value $v_t$. Everything else we already had.
+
+## Cache the keys and values
+
+The fix is to keep a per-layer buffer of the keys and values seen so far. On each
+step you compute the new $k_t, v_t$, append them, and attend against the full
+cached tensors — but you only ever run the projection on the *single* new token.
+
+```python
+import torch
+
+class KVCache:
+    def __init__(self):
+        self.k = None  # (batch, heads, seq, d_head)
+        self.v = None
+
+    def update(self, k_new, v_new):
+        if self.k is None:
+            self.k, self.v = k_new, v_new
+        else:
+            self.k = torch.cat([self.k, k_new], dim=2)
+            self.v = torch.cat([self.v, v_new], dim=2)
+        return self.k, self.v
+
+def attention_step(q_t, k_new, v_new, cache, d_head):
+    # q_t, k_new, v_new: (batch, heads, 1, d_head)  — just the new token
+    K, V = cache.update(k_new, v_new)               # full history
+    scores = q_t @ K.transpose(-2, -1) / d_head ** 0.5
+    weights = torch.softmax(scores, dim=-1)
+    return weights @ V                              # (batch, heads, 1, d_head)
+```
+
+Generation now splits into two phases. **Prefill** runs the full prompt through
+the model once, populating the cache for every layer. **Decode** then produces
+tokens one at a time, each step doing $O(t)$ work instead of $O(t^2)$. Total cost
+across the sequence drops from $O(n^2)$ to $O(n)$ per layer.
+
+<Callout type="warning" title="The cache lives per layer, per head">
+There is one K and one V buffer for every attention layer — not one global cache.
+A 32-layer model keeps 32 separate key/value histories. Forgetting this is the
+most common reason a hand-rolled generation loop produces garbage after the first
+token.
+</Callout>
+
+## What it costs you
+
+Caching trades compute for memory, and that memory is not small. For a model with
+$L$ layers, $h$ heads, head dimension $d$, batch size $b$, and sequence length
+$n$, the cache holds
+
+$$
+2 \cdot L \cdot b \cdot h \cdot n \cdot d
+$$
+
+values (the 2 is for K and V). In half precision that is a few hundred kilobytes
+per token for a 7B model — which, at a context of tens of thousands of tokens,
+becomes gigabytes. At long context the KV cache, not the weights, is what fills
+your GPU.
+
+This pressure is exactly what drives the newer attention variants.
+**Multi-query attention** shares a single K and V across all query heads, shrinking
+the cache by a factor of $h$. **Grouped-query attention** interpolates: a small
+number of KV heads shared among groups of query heads, trading a little quality
+for a much smaller footprint. Both are, at heart, answers to the question KV
+caching raises — *we sped up the compute, so now the memory is the wall.*
+
+## Takeaway
+
+KV caching is not an approximation. It computes the identical result the naive
+loop would, just without throwing away work it already did. Understand it and two
+things fall into place: why LLM serving frameworks talk about prefill and decode
+as separate phases, and why so much recent architecture work is really about
+making that cache cheaper to keep.

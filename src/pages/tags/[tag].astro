@@ -1,0 +1,36 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostRow from '../../components/PostRow.astro';
+import { sortByDate, published } from '../../utils';
+
+export async function getStaticPaths() {
+  const posts = published(await getCollection('posts'));
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
+  return tags.map((tag) => ({
+    params: { tag },
+    props: { tag, posts: sortByDate(posts.filter((p) => p.data.tags.includes(tag))) },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag}`}>
+  <div class="mx-auto max-w-3xl px-6">
+    <section class="pt-12 pb-4">
+      <a href="/writing" class="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i> all writing
+      </a>
+      <h1 class="mt-4 font-serif text-[1.875rem] font-medium">
+        <span class="text-text-muted">#</span>{tag}
+      </h1>
+      <p class="mt-2 text-text-secondary">
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'} tagged {tag}.
+      </p>
+    </section>
+    <section class="pb-4">
+      {posts.map((post) => <PostRow post={post} />)}
+    </section>
+  </div>
+</BaseLayout>

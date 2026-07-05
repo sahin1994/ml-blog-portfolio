@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { published } from '../../utils';
+
+const projects = published(await getCollection('projects')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title="Projects">
+  <div class="mx-auto max-w-3xl px-6">
+    <section class="pt-12 pb-6">
+      <h1 class="font-serif text-[1.875rem] font-medium">Projects</h1>
+      <p class="mt-2 max-w-[56ch] leading-relaxed text-text-secondary">
+        Things I've built — libraries, apps, and experiments across machine learning and data
+        science. Each links to its code and a write-up.
+      </p>
+    </section>
+
+    <section class="grid gap-3 pb-4 sm:grid-cols-2">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </section>
+  </div>
+</BaseLayout>

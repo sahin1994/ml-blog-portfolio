@@ -1,0 +1,50 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+const { project } = Astro.props;
+const { color, icon, title, description, tech, repo, demo } = project.data;
+---
+
+<div
+  class="rounded-xl border border-border bg-surface-1 p-4"
+  style={`border-top: 3px solid var(--${color})`}
+>
+  <div class="mb-2.5 flex items-center justify-between">
+    <span
+      class="flex h-[34px] w-[34px] items-center justify-center rounded-lg"
+      style={`background: var(--${color}-bg)`}
+    >
+      <i class={`ti ${icon} text-[19px]`} style={`color: var(--${color}-text)`} aria-hidden="true"
+      ></i>
+    </span>
+    <span class="flex gap-2.5 text-[15px] text-text-muted">
+      {
+        repo && (
+          <a href={repo} aria-label="Repository" class="hover:text-text">
+            <i class="ti ti-brand-github" aria-hidden="true" />
+          </a>
+        )
+      }
+      {
+        demo && (
+          <a href={demo} aria-label="Live demo" class="hover:text-text">
+            <i class="ti ti-external-link" aria-hidden="true" />
+          </a>
+        )
+      }
+    </span>
+  </div>
+  <a href={`/projects/${project.id}`}>
+    <p class="text-[15px] font-medium hover:text-accent-text">{title}</p>
+  </a>
+  <p class="mt-1 mb-2.5 text-[13px] leading-snug text-text-secondary">{description}</p>
+  <span
+    class="rounded-full px-2 py-0.5 text-[11px]"
+    style={`background: var(--${color}-bg); color: var(--${color}-text)`}
+  >
+    {tech.join(' · ')}
+  </span>
+</div>

@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostRow from '../components/PostRow.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { sortByDate, published } from '../utils';
+
+const posts = sortByDate(published(await getCollection('posts'))).slice(0, 3);
+const projects = published(await getCollection('projects'))
+  .sort((a, b) => Number(b.data.featured) - Number(a.data.featured))
+  .slice(0, 3);
+---
+
+<BaseLayout>
+  <div class="mx-auto max-w-3xl px-6">
+    <section class="pt-16 pb-9">
+      <div class="mb-4 flex flex-wrap gap-2 text-[13px]">
+        <span class="rounded-full px-2.5 py-[3px]" style="background:var(--accent-bg);color:var(--accent-text)">machine learning</span>
+        <span class="rounded-full px-2.5 py-[3px]" style="background:var(--pro-bg);color:var(--pro-text)">data science</span>
+        <span class="rounded-full px-2.5 py-[3px]" style="background:var(--success-bg);color:var(--success-text)">engineering</span>
+      </div>
+      <h1 class="max-w-[30ch] font-serif text-[1.875rem] leading-tight font-medium">
+        I write about the systems behind machine learning.
+      </h1>
+      <p class="mt-4 max-w-[58ch] leading-relaxed text-text-secondary">
+        Data scientist and engineer. Here I share tutorials, deep-dives, and the projects I
+        build — from first principles to production. No hype, just the working details.
+      </p>
+    </section>
+
+    <section class="border-t border-border pt-5">
+      <div class="flex items-baseline justify-between py-3">
+        <h2 class="text-[15px] font-medium">Recent writing</h2>
+        <a href="/writing" class="text-[13px] text-accent-text">all posts <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      {posts.map((post) => <PostRow post={post} />)}
+    </section>
+
+    <section class="mt-4 border-t border-border pt-5">
+      <div class="flex items-baseline justify-between py-3">
+        <h2 class="text-[15px] font-medium">Selected projects</h2>
+        <a href="/projects" class="text-[13px] text-accent-text">all projects <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-3">
+        {projects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

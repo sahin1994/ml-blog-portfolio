@@ -1,0 +1,120 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { CATEGORY_COLOR } from '../consts';
+import { formatDate, readMinutes } from '../utils';
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  headings: MarkdownHeading[];
+  prev?: CollectionEntry<'posts'>;
+  next?: CollectionEntry<'posts'>;
+}
+const { post, headings, prev, next } = Astro.props;
+const color = CATEGORY_COLOR[post.data.category] ?? 'accent';
+const mins = readMinutes(post.body);
+const toc = headings.filter((h) => h.depth === 2);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="mx-auto max-w-2xl px-6" data-pagefind-body>
+    <header class="pt-10">
+      <div class="mb-4 flex items-center gap-2.5 text-xs">
+        <span
+          class="rounded-full px-2.5 py-0.5"
+          style={`background: var(--${color}-bg); color: var(--${color}-text)`}
+          data-pagefind-filter="category"
+        >
+          {post.data.category}
+        </span>
+        <span class="text-text-muted">
+          {post.data.tags.join(' · ')}{post.data.tags.length ? ' · ' : ''}{mins} min read
+        </span>
+      </div>
+
+      <h1 class="font-serif text-[2rem] leading-tight font-medium">{post.data.title}</h1>
+      <p class="mt-4 font-serif text-lg leading-relaxed text-text-secondary">
+        {post.data.description}
+      </p>
+
+      <div class="mt-6 flex items-center gap-3 border-y border-border py-4">
+        <span
+          class="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-accent text-sm font-medium text-white"
+          >SA</span
+        >
+        <div>
+          <p class="text-sm font-medium">Sahin Ahmed</p>
+          <p class="text-[13px] text-text-muted">{formatDate(post.data.pubDate)}</p>
+        </div>
+      </div>
+    </header>
+
+    {
+      toc.length > 1 && (
+        <nav class="mt-6 rounded-xl bg-surface-1 p-4" data-pagefind-ignore>
+          <p class="mb-2.5 text-xs tracking-wide text-text-muted uppercase">On this page</p>
+          <ul class="flex flex-col gap-2 text-sm">
+            {toc.map((h) => (
+              <li>
+                <a href={`#${h.slug}`} class="text-text-secondary hover:text-accent-text">
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+
+    <div class="prose mt-8">
+      <slot />
+    </div>
+
+    <nav class="mt-10 flex gap-3 border-t border-border pt-6" data-pagefind-ignore>
+      {
+        prev ? (
+          <a href={`/writing/${prev.id}`} class="flex-1 rounded-xl border border-border p-3 hover:bg-surface-1">
+            <p class="mb-1 text-xs text-text-muted">
+              <i class="ti ti-arrow-left" aria-hidden="true" /> previous
+            </p>
+            <p class="text-sm font-medium">{prev.data.title}</p>
+          </a>
+        ) : (
+          <span class="flex-1" />
+        )
+      }
+      {
+        next ? (
+          <a href={`/writing/${next.id}`} class="flex-1 rounded-xl border border-border p-3 text-right hover:bg-surface-1">
+            <p class="mb-1 text-xs text-text-muted">
+              next <i class="ti ti-arrow-right" aria-hidden="true" />
+            </p>
+            <p class="text-sm font-medium">{next.data.title}</p>
+          </a>
+        ) : (
+          <span class="flex-1" />
+        )
+      }
+    </nav>
+  </article>
+</BaseLayout>
+
+<script is:inline>
+  document.querySelectorAll('.prose pre.astro-code').forEach((pre) => {
+    const el = pre;
+    el.style.position = 'relative';
+    const btn = document.createElement('button');
+    btn.setAttribute('aria-label', 'Copy code');
+    btn.innerHTML = '<i class="ti ti-copy"></i>';
+    btn.style.cssText =
+      'position:absolute;top:8px;right:8px;padding:4px 8px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text-muted);cursor:pointer;line-height:1;';
+    btn.addEventListener('click', () => {
+      const code = el.querySelector('code');
+      navigator.clipboard.writeText(code ? code.innerText : el.innerText);
+      btn.innerHTML = '<i class="ti ti-check"></i>';
+      setTimeout(() => (btn.innerHTML = '<i class="ti ti-copy"></i>'), 1500);
+    });
+    el.appendChild(btn);
+  });
+</script>

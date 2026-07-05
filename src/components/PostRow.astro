@@ -1,0 +1,37 @@
+---
+import { CATEGORY_COLOR } from '../consts';
+import { shortDate, readMinutes } from '../utils';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+const { post } = Astro.props;
+const color = CATEGORY_COLOR[post.data.category] ?? 'accent';
+const mins = readMinutes(post.body);
+const tags = post.data.tags.join(' · ');
+---
+
+<a
+  href={`/writing/${post.id}`}
+  data-tags={[post.data.category, ...post.data.tags].join(' ')}
+  class="post block border-b border-border py-4 pl-3.5 transition-colors hover:bg-surface-1"
+  style={`border-left: 3px solid var(--${color})`}
+>
+  <div class="flex items-baseline justify-between gap-4">
+    <span class="font-medium">{post.data.title}</span>
+    <span class="shrink-0 text-xs text-text-muted">{shortDate(post.data.pubDate)}</span>
+  </div>
+  <p class="mt-1.5 mb-2 text-sm leading-relaxed text-text-secondary">
+    {post.data.description}
+  </p>
+  <span
+    class="rounded-full px-2 py-0.5 text-[11px]"
+    style={`background: var(--${color}-bg); color: var(--${color}-text)`}
+  >
+    {post.data.category}
+  </span>
+  <span class="ml-1.5 text-[11px] text-text-secondary">
+    {tags ? `${tags} · ` : ''}{mins} min
+  </span>
+</a>

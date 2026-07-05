@@ -1,0 +1,42 @@
+---
+interface Props {
+  type?: 'note' | 'warning' | 'tip';
+  title?: string;
+}
+const { type = 'note', title } = Astro.props;
+
+const map = {
+  note: { color: 'accent', icon: 'ti-info-circle', label: 'Note' },
+  warning: { color: 'warning', icon: 'ti-alert-triangle', label: 'Watch out' },
+  tip: { color: 'success', icon: 'ti-bulb', label: 'Tip' },
+} as const;
+const c = map[type];
+---
+
+<div
+  class="my-5 py-3.5 pr-4 pl-4"
+  style={`background: var(--${c.color}-bg); border-left: 3px solid var(--${c.color})`}
+>
+  <p
+    class="mb-1 flex items-center gap-1.5 text-[13px] font-medium"
+    style={`color: var(--${c.color}-text)`}
+  >
+    <i class={`ti ${c.icon}`} aria-hidden="true"></i>
+    {title ?? c.label}
+  </p>
+  <div class="callout-body text-sm leading-relaxed">
+    <slot />
+  </div>
+</div>
+
+<style is:global>
+  .callout-body > :first-child { margin-top: 0; }
+  .callout-body > :last-child { margin-bottom: 0; }
+  .callout-body code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+  }
+</style>

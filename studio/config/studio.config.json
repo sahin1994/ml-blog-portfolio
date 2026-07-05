@@ -1,0 +1,26 @@
+{
+  "model": "sonnet",
+  "defaultCategory": "tutorial",
+  "quickActions": [
+    {
+      "label": "Draft",
+      "prompt": "Draft a new section that would naturally come next in this post."
+    },
+    {
+      "label": "Tighten",
+      "prompt": "Tighten the whole post — cut filler, keep the meaning. Update the post."
+    },
+    {
+      "label": "Diagram",
+      "prompt": "Add a Mermaid diagram that illustrates the key idea, in a ```mermaid code block. Update the post."
+    },
+    {
+      "label": "Title",
+      "prompt": "Suggest 3 sharper alternative titles for this post."
+    },
+    {
+      "label": "Callout",
+      "prompt": "Add one useful callout highlighting a common pitfall. Update the post."
+    }
+  ]
+}

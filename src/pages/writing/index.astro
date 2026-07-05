@@ -1,0 +1,129 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostRow from '../../components/PostRow.astro';
+import { sortByDate, published } from '../../utils';
+
+const posts = sortByDate(published(await getCollection('posts')));
+
+const categories = [...new Set(posts.map((p) => p.data.category))];
+const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+const filters = ['all', ...categories, ...tags];
+
+const byYear = new Map<number, typeof posts>();
+for (const post of posts) {
+  const y = post.data.pubDate.getFullYear();
+  if (!byYear.has(y)) byYear.set(y, []);
+  byYear.get(y)!.push(post);
+}
+const years = [...byYear.keys()].sort((a, b) => b - a);
+---
+
+<BaseLayout title="Writing">
+  <div id="arch" class="mx-auto max-w-3xl px-6">
+    <section class="pt-12 pb-5">
+      <h1 class="font-serif text-[1.875rem] font-medium">Writing</h1>
+      <p class="mt-2 max-w-[56ch] leading-relaxed text-text-secondary">
+        Tutorials and deep-dives on machine learning, data science, and the engineering
+        underneath. <span id="count" class="text-text">{posts.length} posts</span>.
+      </p>
+
+      <div class="relative mt-6 mb-4">
+        <i class="ti ti-search absolute top-1/2 left-3 -translate-y-1/2 text-text-muted" aria-hidden="true"></i>
+        <input
+          id="search"
+          type="text"
+          placeholder="Search posts"
+          class="w-full rounded-lg border border-border bg-surface py-2 pr-3 pl-9 text-sm outline-none focus:border-accent"
+        />
+      </div>
+
+      <div id="chips" class="flex flex-wrap gap-2">
+        {
+          filters.map((f) => (
+            <button
+              data-filter={f}
+              class:list={[
+                'chip rounded-full border px-3 py-[5px] text-[13px]',
+                f === 'all'
+                  ? 'border-border bg-accent text-white'
+                  : 'border-border bg-transparent text-text-secondary hover:border-text-muted',
+              ]}
+            >
+              {f}
+            </button>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="pb-4">
+      {
+        years.map((year) => (
+          <div data-year={year}>
+            <p class="border-b border-border pt-3 pb-1 text-[13px] tracking-widest text-text-muted">
+              {year}
+            </p>
+            {byYear.get(year)!.map((post) => <PostRow post={post} />)}
+          </div>
+        ))
+      }
+      <p id="empty" class="hidden py-8 text-center text-sm text-text-muted">
+        No posts match that filter.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    const root = document.getElementById('arch');
+    if (!root) return;
+    const chips = root.querySelectorAll('.chip');
+    const posts = root.querySelectorAll('.post');
+    const years = root.querySelectorAll('[data-year]');
+    const count = root.querySelector('#count');
+    const empty = root.querySelector('#empty');
+    const search = root.querySelector('#search');
+    let active = 'all';
+
+    function activate(btn) {
+      chips.forEach((c) => {
+        c.classList.remove('bg-accent', 'text-white');
+        c.classList.add('bg-transparent', 'text-text-secondary');
+      });
+      btn.classList.add('bg-accent', 'text-white');
+      btn.classList.remove('bg-transparent', 'text-text-secondary');
+    }
+
+    function apply() {
+      const q = (search?.value || '').toLowerCase();
+      let n = 0;
+      posts.forEach((p) => {
+        const tagMatch = active === 'all' || p.dataset.tags.split(' ').indexOf(active) !== -1;
+        const textMatch = !q || p.textContent.toLowerCase().indexOf(q) !== -1;
+        const show = tagMatch && textMatch;
+        p.style.display = show ? 'block' : 'none';
+        if (show) n++;
+      });
+      years.forEach((y) => {
+        const any = Array.prototype.some.call(
+          y.querySelectorAll('.post'),
+          (p) => p.style.display !== 'none',
+        );
+        y.style.display = any ? 'block' : 'none';
+      });
+      if (count) count.textContent = n + (n === 1 ? ' post' : ' posts');
+      if (empty) empty.style.display = n === 0 ? 'block' : 'none';
+    }
+
+    chips.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        active = btn.dataset.filter;
+        activate(btn);
+        apply();
+      });
+    });
+    search?.addEventListener('input', apply);
+  })();
+</script>
